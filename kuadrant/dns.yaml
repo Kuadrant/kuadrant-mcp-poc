@@ -1,0 +1,16 @@
+apiVersion: kuadrant.io/v1
+kind: DNSPolicy
+metadata:
+  name: mcp-server-everything-dnspolicy
+  namespace: mcp-gateway
+spec:
+  loadBalancing:
+    defaultGeo: true
+    geo: GEO-NA
+    weight: 120
+  targetRef:
+    name: mcp-server-everything
+    group: gateway.networking.k8s.io
+    kind: Gateway
+  providerRefs:
+  - name: aws-credentials 
