@@ -42,6 +42,12 @@ export KUADRANT_AWS_SECRET_ACCESS_KEY=xxxx # AWS Secret Access Key with access t
    kubectl get pods -n mcp-server
 ```
 
+5. Create the gateway namespace:
+
+```sh
+    kubectl create ns mcp-gateway
+```
+
 5. Create the secret credentials in the same namespace as the Gateway - these will be used to configure DNS:
 
 ```sh
@@ -64,7 +70,7 @@ export KUADRANT_AWS_SECRET_ACCESS_KEY=xxxx # AWS Secret Access Key with access t
 7. Create the Kuadrant Gateway:
 
 ```sh
-    kubectl apply -f kuadrant/kuadrant-gateway.yaml
+    kubectl apply -f kuadrant/gateway.yaml
 ```
 
 8. Create the Lets encrypt Cluster issuer and TlS Policy:
@@ -73,7 +79,7 @@ export KUADRANT_AWS_SECRET_ACCESS_KEY=xxxx # AWS Secret Access Key with access t
   kubectl apply -f kuadrant/tls.yaml
 ```
 
-    **Note**: The cert can't be self signed. MCP clients to accept self signed certs yet.
+    **Note**: The cert can't be self signed. MCP clients dont accept self signed certs yet.
 
 9. Create the DNSPolicy:
 
@@ -81,29 +87,29 @@ export KUADRANT_AWS_SECRET_ACCESS_KEY=xxxx # AWS Secret Access Key with access t
    kubectl apply -f kuadrant/dns.yaml
 ```
 
-10. Test that the MCP server is responding
+10. After a minute, Test that the MCP server is responding
 
 ```sh
-curl -v  POST "https://${KUADRANT_ZONE_ROOT_DOMAIN}/mcp" \
-     -H "Content-Type: application/json" \
-     -H "Accept: application/json, text/event-stream" \
-     -d '{
-           "jsonrpc": "2.0",
-           "method": "initialize",
-           "params": {
-             "protocolVersion": "2024-11-05",
-             "capabilities": {
-               "resources": {},
-               "tools": {},
-               "prompts": {}
-             },
-             "clientInfo": {
-               "name": "final-test-curl-client",
-               "version": "1.0"
-             }
-           },
-           "id": 1
-         }'
+curl -v -X POST "https://api.${KUADRANT_ZONE_ROOT_DOMAIN}/mcp" \
+      -H "Content-Type: application/json" \
+      -H "Accept: application/json, text/event-stream" \
+      -d '{
+            "jsonrpc": "2.0",
+            "method": "initialize",
+            "params": {
+              "protocolVersion": "2024-11-05",
+              "capabilities": {
+                "resources": {},
+                "tools": {},
+                "prompts": {}
+              },
+              "clientInfo": {
+                "name": "test-curl-client",
+                "version": "1.0"
+              }
+            },
+            "id": 1
+          }'
 ```
 
 11. Create the Rate limit policy:
@@ -115,7 +121,7 @@ curl -v  POST "https://${KUADRANT_ZONE_ROOT_DOMAIN}/mcp" \
 12. Create the Auth policy and the API Key secrets:
 
 ```sh
-   kubectl apply -f kuadrant/rlp.yaml
+   kubectl apply -f kuadrant/auth.yaml
 ```
 
 ### MCP Client
@@ -129,7 +135,7 @@ In this example we are using Vscode Co pilot as our MCP client as it has capabil
     "servers": {
       "my-mcp-server": {
         "type": "http",
-        "url": "https://KUADRANT_ZONE_ROOT_DOMAIN/mcp",
+        "url": "https://KUADRANT_ZONE_ROOT_DOMAIN_GOES_HERE/mcp",
         "headers": {
           "Authorization": "APIKEY IAMALICE"
         }
